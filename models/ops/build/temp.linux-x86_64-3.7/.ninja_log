@@ -1,0 +1,4 @@
+# ninja log v5
+39	21554	1611922976000000000	/mnt/lustre/zhouqianyu/vod/workspace/TransVOD/models/ops/build/temp.linux-x86_64-3.7/mnt/lustre/zhouqianyu/vod/workspace/TransVOD/models/ops/src/cpu/ms_deform_attn_cpu.o	f6529e61a8c88466
+39	47827	1611923004000000000	/mnt/lustre/zhouqianyu/vod/workspace/TransVOD/models/ops/build/temp.linux-x86_64-3.7/mnt/lustre/zhouqianyu/vod/workspace/TransVOD/models/ops/src/vision.o	208a34d5e4a0f397
+39	142518	1611923099000000000	/mnt/lustre/zhouqianyu/vod/workspace/TransVOD/models/ops/build/temp.linux-x86_64-3.7/mnt/lustre/zhouqianyu/vod/workspace/TransVOD/models/ops/src/cuda/ms_deform_attn_cuda.o	a3a712f845c1ccba
