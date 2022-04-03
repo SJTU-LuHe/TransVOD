@@ -75,7 +75,7 @@ The codebase is built on top of [Deformable DETR](https://github.com/fundamental
 
 ### Dataset preparation
 
-1. Please download ILSVRC2015 DET and ILSVRC2015 VID dataset from [here](https://image-net.org/challenges/LSVRC/2015/2015-downloads). The joint [json](https://drive.google.com/drive/folders/1cCXY41IFsLT-P06xlPAGptG7sc-zmGKF?usp=sharing)  of two datasets is provided. The  After that, we recommend to symlink the path to the datasets to datasets/. And the path structure should be as follows:
+1. Please download ILSVRC2015 DET and ILSVRC2015 VID dataset from [here](https://image-net.org/challenges/LSVRC/2015/2015-downloads). Then we covert jsons of two datasets by using the [code](https://github.com/open-mmlab/mmtracking/blob/master/tools/convert_datasets/ilsvrc/). The joint [json](https://drive.google.com/drive/folders/1cCXY41IFsLT-P06xlPAGptG7sc-zmGKF?usp=sharing)  of two datasets is provided. The  After that, we recommend to symlink the path to the datasets to datasets/. And the path structure should be as follows:
 
 ```
 code_root/
@@ -85,9 +85,9 @@ code_root/
             ├── VID/
             └── DET/
         └── annotations/
-        	├── imagenet_vid_train.json
+        	  ├── imagenet_vid_train.json
             ├── imagenet_vid_train_joint_30.json
-        	└── imagenet_vid_val.json
+        	  └── imagenet_vid_val.json
 
 ```
 
