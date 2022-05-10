@@ -182,8 +182,6 @@ class DeformableTransformer(nn.Module):
         memory = self.encoder(src_flatten, spatial_shapes, level_start_index, valid_ratios, lvl_pos_embed_flatten, mask_flatten)
 
         bs, _, c = memory.shape
-        # bs = batch_size*num_ref_frames e.g. 2*(14+1)=30 
-        # actual BS is then e.g. 30//15=2
         BS = bs//self.num_ref_frames
         if self.two_stage:
             output_memory, output_proposals = self.gen_encoder_output_proposals(memory, mask_flatten, spatial_shapes)
@@ -250,9 +248,11 @@ class DeformableTransformer(nn.Module):
 
         cur_hs = last_hs[:,0]
         ref_hs = torch.cat(torch.chunk(last_hs[:,1:], self.num_ref_frames, dim=1), dim=2).squeeze()
+        if len(ref_hs.size())==2: ref_hs = ref_hs.unsqueeze(0)
         cur_reference_out = last_reference_out[:,0]
 
         ref_hs_logits = class_embed(ref_hs)
+        if len(ref_hs_logits.size())==2: ref_hs_logits = ref_hs_logits.unsqueeze(0)
         prob = ref_hs_logits.sigmoid()
 
         topk_values, topk_indexes = torch.topk(prob.view(ref_hs_logits.shape[0], -1), 80 * self.num_ref_frames, dim=1)
@@ -313,16 +313,15 @@ class TemporalQueryEncoderLayer(nn.Module):
         # self.attention
         q = k = self.with_pos_embed(query, query_pos)
         tgt2 = self.self_attn(q.transpose(0, 1), k.transpose(0, 1), query.transpose(0, 1))[0].transpose(0, 1)
-        tgt = query.squeeze() + self.dropout2(tgt2)
+        tgt = query + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
 
-        # cross attention
+        # cross attention 
         tgt2 = self.cross_attn(
-                self.with_pos_embed(tgt, query_pos).transpose(0, 1), 
-                self.with_pos_embed(ref_query, ref_query_pos).transpose(0, 1),
-                ref_query.transpose(0,1)
-            )[0].transpose(0,1)
-
+            self.with_pos_embed(tgt, query_pos).transpose(0, 1), 
+            self.with_pos_embed(ref_query, ref_query_pos).transpose(0, 1),
+            ref_query.transpose(0,1)
+        )[0].transpose(0,1)
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
 
