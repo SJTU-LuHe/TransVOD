@@ -182,6 +182,9 @@ class DeformableTransformer(nn.Module):
         memory = self.encoder(src_flatten, spatial_shapes, level_start_index, valid_ratios, lvl_pos_embed_flatten, mask_flatten)
 
         bs, _, c = memory.shape
+        # bs = batch_size*num_ref_frames e.g. 2*(14+1)=30 
+        # actual BS is then e.g. 30//15=2
+        BS = bs//self.num_ref_frames
         if self.two_stage:
             output_memory, output_proposals = self.gen_encoder_output_proposals(memory, mask_flatten, spatial_shapes)
 
@@ -219,31 +222,36 @@ class DeformableTransformer(nn.Module):
             inter_references = inter_references.detach()
 
         # Temporal Transfomer
-        memory_list = torch.chunk(memory, self.num_ref_frames+1,  dim=0)
-        ref_spatial_shapes = spatial_shapes.expand(self.num_ref_frames, 2).contiguous()
-        cur_memory = memory_list[0]
-        ref_memory = torch.cat(memory_list[1:], 1)
-        cur_pos_embed = lvl_pos_embed_flatten[0:1]
-        ref_pos_embed_list = torch.chunk(lvl_pos_embed_flatten[1:], self.num_ref_frames, dim=0)
-        ref_pos_embed = torch.cat(ref_pos_embed_list, 1)
+        memory_list = torch.stack(torch.chunk(memory, BS,  dim=0),dim=0)
+        ref_spatial_shapes = spatial_shapes.expand(BS,self.num_ref_frames, 2).contiguous()
+        cur_memory = memory_list[:,0]
+        ref_memory = memory_list[:, 1:]
+        lvl_pos_embed_flatten = torch.stack(torch.chunk(lvl_pos_embed_flatten, BS,  dim=0),dim=0)
+        cur_pos_embed = lvl_pos_embed_flatten[:,0]
+        ref_pos_embed = lvl_pos_embed_flatten[:,1:]
         ref_memory = ref_memory + ref_pos_embed
-        frame_start_index = torch.cat((ref_spatial_shapes.new_zeros((1, )), ref_spatial_shapes.prod(1).cumsum(0)[:-1])).contiguous()
+        
 
-        valid_ratios = valid_ratios[0:1].expand(1, self.num_ref_frames, 2)
+        valid_ratios = torch.stack(torch.chunk(valid_ratios, BS,  dim=0),dim=0)
+        valid_ratios = valid_ratios[:,0].expand(BS, self.num_ref_frames, 2)
 
         reference_points = self.get_reference_points(spatial_shapes, valid_ratios, device=cur_memory.device)
-        
+
+        # #print(cur_memory.size(),cur_pos_embed.size(),reference_points.size(),ref_memory.size(),ref_spatial_shapes.size(),frame_start_index.size())
         if self.TDAM:
+            frame_start_index = torch.cat((ref_spatial_shapes.new_zeros((1, )), ref_spatial_shapes.prod(2).cumsum(1)[:-1])).contiguous()
             cur_memory = self.temporal_encoder_layer(cur_memory, cur_pos_embed, reference_points, ref_memory, ref_spatial_shapes,frame_start_index)
+
 
         last_hs = hs[-1]
         last_reference_out = inter_references_out[-1]
-        last_hs_list = torch.chunk(last_hs, self.num_ref_frames + 1, dim = 0)
-        last_reference_out_list = torch.chunk(last_reference_out, self.num_ref_frames + 1, dim = 0)
-        cur_hs = last_hs_list[0]
-        ref_hs = torch.cat(last_hs_list[1:], 1)
-        cur_reference_out = last_reference_out_list[0]
-        
+        last_hs = torch.stack(torch.chunk(last_hs, BS,  dim=0),dim=0)
+        last_reference_out = torch.stack(torch.chunk(last_reference_out, BS,  dim=0),dim=0)
+
+        cur_hs = last_hs[:,0]
+        ref_hs = torch.cat(torch.chunk(last_hs[:,1:], self.num_ref_frames, dim=1), dim=2).squeeze()
+        cur_reference_out = last_reference_out[:,0]
+
         ref_hs_logits = class_embed(ref_hs)
         prob = ref_hs_logits.sigmoid()
 
@@ -264,7 +272,7 @@ class DeformableTransformer(nn.Module):
 
 
         final_hs, final_references_out = self.temporal_decoder(cur_hs, cur_reference_out, cur_memory,
-                                        spatial_shapes[0:1], level_start_index[0:1], valid_ratios[0:1], None, None)
+                                        spatial_shapes[0:1], level_start_index[0:1], valid_ratios, None, None)
 
         return hs[:,0:1,:,:], init_reference_out[0:1], inter_references_out[:,0:1,:,:], None, None, final_hs, final_references_out
 
@@ -305,15 +313,16 @@ class TemporalQueryEncoderLayer(nn.Module):
         # self.attention
         q = k = self.with_pos_embed(query, query_pos)
         tgt2 = self.self_attn(q.transpose(0, 1), k.transpose(0, 1), query.transpose(0, 1))[0].transpose(0, 1)
-        tgt = query + self.dropout2(tgt2)
+        tgt = query.squeeze() + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
 
-        # cross attention 
+        # cross attention
         tgt2 = self.cross_attn(
-            self.with_pos_embed(tgt, query_pos).transpose(0, 1), 
-            self.with_pos_embed(ref_query, ref_query_pos).transpose(0, 1),
-            ref_query.transpose(0,1)
-        )[0].transpose(0,1)
+                self.with_pos_embed(tgt, query_pos).transpose(0, 1), 
+                self.with_pos_embed(ref_query, ref_query_pos).transpose(0, 1),
+                ref_query.transpose(0,1)
+            )[0].transpose(0,1)
+
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
 
