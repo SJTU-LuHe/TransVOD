@@ -1,5 +1,6 @@
 # TransVOD:End-to-End Video Object Detection with Spatial-Temporal Transformers
 
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/transvod-end-to-end-video-object-detection/video-object-detection-on-imagenet-vid)](https://paperswithcode.com/sota/video-object-detection-on-imagenet-vid?p=transvod-end-to-end-video-object-detection)
 
 
 This repository is an official implementation of the paper [TransVOD:End-to-End Video Object Detection with Spatial-Temporal Transformers](https://dlnext.acm.org/doi/10.1145/3474085.3475285).
