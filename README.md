@@ -1,10 +1,13 @@
-## Our New Model-> Extension of TransVOD: TranVOD++ and TranVOD Lite is accepted by T-PAMI-2022. [paper link](https://arxiv.org/abs/2201.05047)
-# TransVOD:End-to-End Video Object Detection with Spatial-Temporal Transformers
+
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/transvod-end-to-end-video-object-detection/video-object-detection-on-imagenet-vid)](https://paperswithcode.com/sota/video-object-detection-on-imagenet-vid?p=transvod-end-to-end-video-object-detection)
 
 
-This repository is an official implementation of the paper [TransVOD:End-to-End Video Object Detection with Spatial-Temporal Transformers](https://dlnext.acm.org/doi/10.1145/3474085.3475285).
+This repository is an official implementation of the paper [End-to-End Video Object Detection with Spatial-Temporal Transformers](https://dlnext.acm.org/doi/10.1145/3474085.3475285).
+
+## Our New Model-> TranVOD Lite is accepted by TPAMI-2022. [paper link](https://arxiv.org/abs/2201.05047) [code link](https://github.com/qianyuzqy/TransVOD_Lite)
+
+# End-to-End Video Object Detection with Spatial-Temporal Transformers (ACM MM 2022)
 
 ## Introduction
 
