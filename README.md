@@ -5,7 +5,7 @@
 
 This repository is an official implementation of the paper [End-to-End Video Object Detection with Spatial-Temporal Transformers](https://dlnext.acm.org/doi/10.1145/3474085.3475285).
 
-## Our New Model-> TransVOD Lite && TransVOD ++ is accepted by TPAMI-2022. [paper link](https://arxiv.org/abs/2201.05047) [TransVOD Lite code link](https://github.com/qianyuzqy/TransVOD_Lite)
+## Our New Model-> TransVOD Lite && TransVOD ++ is accepted by TPAMI-2022. [paper link](https://arxiv.org/abs/2201.05047), [TransVOD Lite code link](https://github.com/qianyuzqy/TransVOD_Lite), [TransVOD++ code link](https://github.com/qianyuzqy/TransVOD_plusplus)
 
 # End-to-End Video Object Detection with Spatial-Temporal Transformers (ACM MM 2022)
 
